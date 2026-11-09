@@ -102,6 +102,26 @@ class Store private constructor(ctx: Context) :
     fun labeled(): List<Rec> = recent(100000).filter { it.userLabel != null }
 
     @Synchronized
+    fun delete(id: Long) {
+        writableDatabase.execSQL("DELETE FROM notifs WHERE id=?", arrayOf<Any>(id))
+        version.value++
+    }
+
+    /** Removes the fake "Add demo" rows and any rules learned from them. */
+    @Synchronized
+    fun clearDemo() {
+        writableDatabase.execSQL("DELETE FROM notifs WHERE pkg LIKE 'demo.%'")
+        writableDatabase.execSQL("DELETE FROM overrides WHERE nkey LIKE 'demo.%'")
+        version.value++
+    }
+
+    /** Privacy: drop old logged text (OTPs, bank messages). Rows you corrected are kept as training data. */
+    @Synchronized
+    fun purgeOlderThan(ts: Long) {
+        writableDatabase.execSQL("DELETE FROM notifs WHERE ts < ? AND user_label IS NULL", arrayOf<Any>(ts))
+    }
+
+    @Synchronized
     fun clearAll() {
         writableDatabase.execSQL("DELETE FROM notifs")
         writableDatabase.execSQL("DELETE FROM overrides")

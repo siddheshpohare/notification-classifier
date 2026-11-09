@@ -49,11 +49,17 @@ class NotifListener : NotificationListenerService() {
             hidden = true
         }
 
+        val app = appLabel(sbn.packageName)
+        if (res.decision == Decision.IMPORTANT && Prefs.popupEnabled(this)) {
+            Alerts.post(this, app, title, body, n.contentIntent)
+        }
+        store.purgeOlderThan(System.currentTimeMillis() - RETENTION_MS)
+
         store.insert(
             Rec(
                 nkey = Pipeline.normKey(sbn.packageName, title),
                 pkg = sbn.packageName,
-                app = appLabel(sbn.packageName),
+                app = app,
                 title = title,
                 body = body,
                 ts = sbn.postTime,
@@ -71,6 +77,7 @@ class NotifListener : NotificationListenerService() {
     }
 
     companion object {
+        private const val RETENTION_MS = 14L * 24 * 60 * 60 * 1000  // keep uncorrected logs 14 days
         private val PROTECTED_CATEGORIES = setOf(
             Notification.CATEGORY_CALL, Notification.CATEGORY_ALARM, Notification.CATEGORY_NAVIGATION,
             Notification.CATEGORY_TRANSPORT, Notification.CATEGORY_PROGRESS, Notification.CATEGORY_SYSTEM,
