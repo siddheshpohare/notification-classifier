@@ -3,6 +3,8 @@
 
     <!-- Lets the app read other apps' display names (personal sideloaded use). -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- Needed on Android 13+ to show the heads-up alerts for important notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="false"
